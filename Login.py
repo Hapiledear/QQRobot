@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 import logging
 import webbrowser
@@ -11,6 +13,9 @@ import GlobalParam
 from GlobalParam import session
 from MessageObjects import MsgResponse, msgCallBack
 
+import sys
+reload(sys) # Python2.5 初始化后会删除 sys.setdefaultencoding 这个方法，我们需要重新载入
+sys.setdefaultencoding('utf-8')
 LOGGER = logging.getLogger(__name__)
 
 header_info = {
@@ -37,7 +42,7 @@ class Login(object):
             path = os.getcwd() + "/qrcode.png"
         LOGGER.info("二维码已保存,请打开手机QQ并扫描二维码,%s" % path)
         LOGGER.debug("res cookies=%r" % response.cookies)
-        webbrowser.open_new_tab("file://" + path)  # 使用浏览器打开二维码图片
+        # webbrowser.open_new_tab("file://" + path)  # 使用浏览器打开二维码图片
 
     def verifyQRCode(self):
         LOGGER.info("等待扫描二维码")
@@ -55,7 +60,7 @@ class Login(object):
                     if content.startswith("http"):
                         LOGGER.info("正在登录，请稍后")
                         return content
-            elif "已失效" in res:
+            elif r"已失效" in res:
                 LOGGER.info("二维码已失效，尝试重新获取二维码")
                 self.getQrCode()
             elif "403 Forbidden" in res:

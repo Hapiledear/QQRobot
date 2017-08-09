@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 import json
 import logging
 import re
@@ -6,7 +6,8 @@ import re
 import ApiUrl
 import GlobalParam
 from GlobalParam import session
-from TuringRobotApi import getMsgFromTuring
+from MessageRouter import getReturnMessage
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ def msgCallBack(msgResponse):
 
 
 def callBack_message(id, msg):
-    msg = getMsgFromTuring(msg, id)
+    msg = getReturnMessage(msg, id)
     LOGGER.info("发送消息【%s】给好友[%s]" % (msg, id))
     # 策略:有求必回
     reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
@@ -65,7 +66,7 @@ def callBack_message(id, msg):
 def callBack_group_message(id, msg):
     # @自己才回
     if msg.startswith(r"@玄姬"):
-        msg = getMsgFromTuring(msg[3:], id)
+        msg = getReturnMessage(msg[3:], id)
         LOGGER.info("发送消息【%s】给群[%s]" % (msg, id))
         reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
         reqParam = {"group_uin": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199,
@@ -81,7 +82,7 @@ def callBack_group_message(id, msg):
 def callBack_discu_message(id, msg):
     # @自己才回
     if msg.startswith(r"@玄姬"):
-        msg = getMsgFromTuring(msg[3:], id)
+        msg = getReturnMessage(msg[3:], id)
         LOGGER.info("发送消息【%s】给讨论组[%s]" % (msg, id))
         reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
         reqParam = {"did": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199, "msg_id": 65890001,

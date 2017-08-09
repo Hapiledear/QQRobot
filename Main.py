@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 import logging
 import threading
 from Login import Login, loopPool
@@ -12,6 +12,4 @@ if login.login():
     getMessageThread.start()
 
 
-getMessageThread = threading.Thread(target=loopPool())
-getMessageThread.start()
 

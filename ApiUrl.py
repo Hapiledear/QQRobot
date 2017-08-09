@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 
 GET_QR_CODE_URL = r"https://ssl.ptlogin2.qq.com/ptqrshow?appid=501004106&e=0&l=M&s=5&d=72&v=4&t=0.1"
 VERIFY_QR_CODE = ("https://ssl.ptlogin2.qq.com/ptqrlogin?"
