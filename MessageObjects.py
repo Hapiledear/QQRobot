@@ -39,24 +39,27 @@ def msgCallBack(msgResponse):
     LOGGER.info("回复消息")
     type = msgResponse.get_poll_type()
     id = msgResponse.get_from_uin()
-    msg = msgResponse.get_content()
+    reqMsg = msgResponse.get_content()
+    msgObj = getReturnMessage(reqMsg, id)
 
     if type == "message":  # 策略:有求必回
-        callBack_message(id, msg)
-    elif type == "group_message" and msg.startswith(r"@玄姬"):  # @自己才回
-        callBack_group_message(id, msg)
-    elif type == "discu_message" and msg.startswith(r"@玄姬"):
-        callBack_discu_message(id, msg)
+        callBack_Msg(sendPsnMsg, id, msgObj)
+        # callBack_message(id, msg)
+    elif type == "group_message" and reqMsg.startswith(r"@玄姬"):  # @自己才回
+        callBack_Msg(sendGroupMsg, id, msgObj)
+        # callBack_group_message(id, msg)
+    elif type == "discu_message" and reqMsg.startswith(r"@玄姬"):
+        callBack_Msg(sendDiscuMsg, id, msgObj)
+        # callBack_discu_message(id, msg)
         pass
 
 
-def callBack_message(id, msg):
-    msgObj = getReturnMessage(msg, id)
+def callBack_Msg(func, id, msgObj):
     if msgObj.onlyOneMsg():
-        sendPsnMsg(id, msgObj.msgs)
+        func(id, msgObj.msgs)
     else:
         for sendMsg in msgObj.msgs:
-            sendPsnMsg(id, sendMsg)
+            func(id, sendMsg)
 
 
 def sendPsnMsg(id, msg):
@@ -70,15 +73,6 @@ def sendPsnMsg(id, msg):
     checkSendMsgResult(response)
 
 
-def callBack_group_message(id, msg):
-    msgObj = getReturnMessage(msg, id)
-    if msgObj.onlyOneMsg():
-        sendGroupMsg(id, msgObj.msgs)
-    else:
-        for sendMsg in msgObj.msgs:
-            sendGroupMsg(id, sendMsg)
-
-
 def sendGroupMsg(id, msg):
     LOGGER.info("发送消息【%s】给群[%s]" % (msg, id))
     reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
@@ -89,15 +83,6 @@ def sendGroupMsg(id, msg):
     response = postWithRetry(ApiUrl.SEND_MESSAGE_TO_GROUP, reqData, refUrl=ApiUrl.SEND_MESSAGE_TO_GROUP_REF,
                              origin="http://d1.web2.qq.com")
     checkSendMsgResult(response)
-
-
-def callBack_discu_message(id, msg):
-    msgObj = getReturnMessage(msg, id)
-    if msgObj.onlyOneMsg():
-        sendDiscuMsg(id, msgObj.msgs)
-    else:
-        for sendMsg in msgObj.msgs:
-            sendDiscuMsg(id, sendMsg)
 
 
 def sendDiscuMsg(id, msg):

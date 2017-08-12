@@ -24,9 +24,7 @@ LOGGER = logging.getLogger(__name__)
 def getUrl(msg):
     LOGGER.debug("接收到到消息%s" % msg)
     matches = re.findall(regex, msg)
-    if len(matches) == 0:
-        return NOW_NEWS.format("latest")
-    elif nowDate in matches[0]:
+    if len(matches) == 0 or len(matches[0]) == 0 or nowDate in matches[0]:
         return NOW_NEWS.format("latest")
     else:
         return LATIEST_NEWS.format(matches[0].strip())
