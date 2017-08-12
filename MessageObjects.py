@@ -7,6 +7,7 @@ import types
 import ApiUrl
 import GlobalParam
 from GlobalParam import session
+from MessageFilter import filteFromId
 from MessageRouter import getReturnMessage
 
 LOGGER = logging.getLogger(__name__)
@@ -24,6 +25,14 @@ class MsgResponse(object):
     def get_from_uin(self):
         return self.result[0].value.from_uin
 
+    # 群和讨论组用 发送者的ID
+    def get_send_uin(self):
+        type = self.get_poll_type()
+        if type != "message":
+            return self.result[0].value.send_uin
+        else:
+            return self.get_from_uin()
+
     # 消息内容
     def get_content(self):
         resStr = ""
@@ -40,18 +49,19 @@ def msgCallBack(msgResponse):
     type = msgResponse.get_poll_type()
     id = msgResponse.get_from_uin()
     reqMsg = msgResponse.get_content()
-    msgObj = getReturnMessage(reqMsg, id)
+    if filteFromId(msgResponse.get_send_uin()):
+        LOGGER.debug("这条消息的发送者在过滤名单")
+        return
 
     if type == "message":  # 策略:有求必回
+        msgObj = getReturnMessage(reqMsg, id)
         callBack_Msg(sendPsnMsg, id, msgObj)
-        # callBack_message(id, msg)
     elif type == "group_message" and reqMsg.startswith(r"@玄姬"):  # @自己才回
+        msgObj = getReturnMessage(reqMsg, id)
         callBack_Msg(sendGroupMsg, id, msgObj)
-        # callBack_group_message(id, msg)
     elif type == "discu_message" and reqMsg.startswith(r"@玄姬"):
+        msgObj = getReturnMessage(reqMsg, id)
         callBack_Msg(sendDiscuMsg, id, msgObj)
-        # callBack_discu_message(id, msg)
-        pass
 
 
 def callBack_Msg(func, id, msgObj):

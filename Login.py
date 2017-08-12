@@ -8,6 +8,8 @@ import os
 import requests
 import time
 
+import thread
+
 import ApiUrl
 import GlobalParam
 from GlobalParam import session
@@ -125,7 +127,7 @@ def loopPool():
         if "errmsg" in response.text:
             # 执行退出操作，重新登陆一遍
             LOGGER.info("轮训超时 sts=%d" % response.status_code)
-            pass
+            break
         else:
             msgCallBack(resJson)
 
