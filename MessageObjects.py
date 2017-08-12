@@ -2,12 +2,12 @@
 import json
 import logging
 import re
+import types
 
 import ApiUrl
 import GlobalParam
 from GlobalParam import session
 from MessageRouter import getReturnMessage
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,19 +41,26 @@ def msgCallBack(msgResponse):
     id = msgResponse.get_from_uin()
     msg = msgResponse.get_content()
 
-    if type == "message":
+    if type == "message":  # 策略:有求必回
         callBack_message(id, msg)
-    elif type == "group_message":
+    elif type == "group_message" and msg.startswith(r"@玄姬"):  # @自己才回
         callBack_group_message(id, msg)
-    elif type == "discu_message":
+    elif type == "discu_message" and msg.startswith(r"@玄姬"):
         callBack_discu_message(id, msg)
         pass
 
 
 def callBack_message(id, msg):
-    msg = getReturnMessage(msg, id)
+    msgObj = getReturnMessage(msg, id)
+    if msgObj.onlyOneMsg():
+        sendPsnMsg(id, msgObj.msgs)
+    else:
+        for sendMsg in msgObj.msgs:
+            sendPsnMsg(id, sendMsg)
+
+
+def sendPsnMsg(id, msg):
     LOGGER.info("发送消息【%s】给好友[%s]" % (msg, id))
-    # 策略:有求必回
     reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
     reqParam = {"to": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199, "msg_id": 65890001,
                 "psessionid": GlobalParam.psessionid}
@@ -64,34 +71,44 @@ def callBack_message(id, msg):
 
 
 def callBack_group_message(id, msg):
-    # @自己才回
-    if msg.startswith(r"@玄姬"):
-        msg = getReturnMessage(msg[3:], id)
-        LOGGER.info("发送消息【%s】给群[%s]" % (msg, id))
-        reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
-        reqParam = {"group_uin": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199,
-                    "msg_id": 65890001,
-                    "psessionid": GlobalParam.psessionid}
-        reqData = {"r": json.dumps(reqParam)}
-        response = postWithRetry(ApiUrl.SEND_MESSAGE_TO_GROUP, reqData, refUrl=ApiUrl.SEND_MESSAGE_TO_GROUP_REF,
-                                 origin="http://d1.web2.qq.com")
-        checkSendMsgResult(response)
-    pass
+    msgObj = getReturnMessage(msg, id)
+    if msgObj.onlyOneMsg():
+        sendGroupMsg(id, msgObj.msgs)
+    else:
+        for sendMsg in msgObj.msgs:
+            sendGroupMsg(id, sendMsg)
+
+
+def sendGroupMsg(id, msg):
+    LOGGER.info("发送消息【%s】给群[%s]" % (msg, id))
+    reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
+    reqParam = {"group_uin": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199,
+                "msg_id": 65890001,
+                "psessionid": GlobalParam.psessionid}
+    reqData = {"r": json.dumps(reqParam)}
+    response = postWithRetry(ApiUrl.SEND_MESSAGE_TO_GROUP, reqData, refUrl=ApiUrl.SEND_MESSAGE_TO_GROUP_REF,
+                             origin="http://d1.web2.qq.com")
+    checkSendMsgResult(response)
 
 
 def callBack_discu_message(id, msg):
-    # @自己才回
-    if msg.startswith(r"@玄姬"):
-        msg = getReturnMessage(msg[3:], id)
-        LOGGER.info("发送消息【%s】给讨论组[%s]" % (msg, id))
-        reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
-        reqParam = {"did": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199, "msg_id": 65890001,
-                    "psessionid": GlobalParam.psessionid}
-        reqData = {"r": json.dumps(reqParam)}
-        response = postWithRetry(ApiUrl.SEND_MESSAGE_TO_DISCUSS, reqData, refUrl=ApiUrl.SEND_MESSAGE_TO_DISCUSS_REF,
-                                 origin="http://d1.web2.qq.com")
-        checkSendMsgResult(response)
-    pass
+    msgObj = getReturnMessage(msg, id)
+    if msgObj.onlyOneMsg():
+        sendDiscuMsg(id, msgObj.msgs)
+    else:
+        for sendMsg in msgObj.msgs:
+            sendDiscuMsg(id, sendMsg)
+
+
+def sendDiscuMsg(id, msg):
+    LOGGER.info("发送消息【%s】给讨论组[%s]" % (msg, id))
+    reqContent = [msg, ["font", {"color": "000000", "name": "微软雅黑", "size": 10, "style": [0, 0, 0]}]]
+    reqParam = {"did": id, "content": json.dumps(reqContent), "face": 573, "clientid": 53999199, "msg_id": 65890001,
+                "psessionid": GlobalParam.psessionid}
+    reqData = {"r": json.dumps(reqParam)}
+    response = postWithRetry(ApiUrl.SEND_MESSAGE_TO_DISCUSS, reqData, refUrl=ApiUrl.SEND_MESSAGE_TO_DISCUSS_REF,
+                             origin="http://d1.web2.qq.com")
+    checkSendMsgResult(response)
 
 
 def postWithRetry(url, data, refUrl=None, origin=None):

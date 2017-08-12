@@ -4,6 +4,8 @@ import logging
 
 import requests
 
+from GlobalParam import BackMsg
+
 T_Api_key = "5bf9369732de46ea9526afd405c2fd64"
 T_Api_url = "http://www.tuling123.com/openapi/api"
 
@@ -35,4 +37,6 @@ def getMsgFromTuring(msg, usrId='00001'):
         for news in newsList:
             resMsg += "做法" + news["info"] + "\n链接" + news["detailurl"]
         pass
-    return resMsg
+
+    resMsgObj = BackMsg(resMsg,usrId)
+    return resMsgObj

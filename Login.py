@@ -13,9 +13,6 @@ import GlobalParam
 from GlobalParam import session
 from MessageObjects import MsgResponse, msgCallBack
 
-import sys
-reload(sys) # Python2.5 初始化后会删除 sys.setdefaultencoding 这个方法，我们需要重新载入
-sys.setdefaultencoding('utf-8')
 LOGGER = logging.getLogger(__name__)
 
 header_info = {

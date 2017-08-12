@@ -7,6 +7,6 @@ from ZhihuDalyAip import getMsgFromZhihuDaly
 
 def getReturnMessage(msg, id):
     if "知乎日报" in msg:
-        return getMsgFromZhihuDaly(msg)
+        return getMsgFromZhihuDaly(msg,id)
     else:
         return getMsgFromTuring(msg, id)
